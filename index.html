@@ -228,6 +228,7 @@
       const code = prompt("Mot de passe admin :");
       if (code === adminPassword) {
         document.getElementById('admin-panel').style.display = 'block';
+updateAdminDisplay();
       }
     }
 
@@ -245,7 +246,6 @@
     });
 setInterval(() => {
   updateDisplay();
-  updateAdminDisplay();
 }, 1000);
     window.occupy = occupy;
     window.release = release;
@@ -259,4 +259,5 @@ setInterval(() => {
   <button onclick="checkAdminAccess()">Mode Admin</button>
 </body>
 </html>
+
 
