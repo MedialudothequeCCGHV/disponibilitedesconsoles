@@ -29,6 +29,9 @@
     .custom-time { margin-top: 0.5rem; }
     .custom-time input[type="time"] { margin-right: 0.5rem; padding: 0.3rem; border-radius: 0.3rem; border: 1px solid #ccc; }
   </style>
+  <!-- Firebase SDK scripts classiques -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"></script>
 </head>
 <body>
   <header>
@@ -44,10 +47,7 @@
 
   <audio id="alert-sound" src="https://medialudotheque.ccghv.fr/files/arcade-ui-18-2295171.mp3" preload="auto"></audio>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
-
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAvCCs5aCiou0qgXTwWEUpcVp7EaoNAroU",
       authDomain: "consoles-7861c.firebaseapp.com",
@@ -59,8 +59,9 @@
       measurementId: "G-4QM8M1VRVD"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    // Initialise Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
     const consoles = [
       { id: 'ps5', nom: '🎮 PlayStation 5' },
@@ -72,33 +73,33 @@
     let adminPassword = "admin2024";
 
     function saveStateToFirebase() {
-      set(ref(db, 'consoleState'), state);
+      db.ref('consoleState').set(state);
     }
 
     function occupy(id, minutes = 60) {
       const end = new Date();
       end.setMinutes(end.getMinutes() + minutes);
-      state[id] = { ...state[id], status: 'occupied', endTime: end.toISOString() };
+      state[id] = Object.assign({}, state[id], { status: 'occupied', endTime: end.toISOString() });
       saveStateToFirebase();
     }
 
     function release(id) {
-      state[id] = { ...state[id], status: 'disponible', endTime: null };
+      state[id] = Object.assign({}, state[id], { status: 'disponible', endTime: null });
       saveStateToFirebase();
     }
 
     function fermer(id) {
-      state[id] = { ...state[id], status: 'ferme', endTime: null };
+      state[id] = Object.assign({}, state[id], { status: 'ferme', endTime: null });
       saveStateToFirebase();
     }
 
     function animation(id) {
-      state[id] = { ...state[id], status: 'animation', endTime: null };
+      state[id] = Object.assign({}, state[id], { status: 'animation', endTime: null });
       saveStateToFirebase();
     }
 
     function changeManettes(id, value) {
-      state[id] = { ...state[id], manettes: parseInt(value) };
+      state[id] = Object.assign({}, state[id], { manettes: parseInt(value) });
       saveStateToFirebase();
     }
 
@@ -116,7 +117,7 @@
           customEnd.setDate(customEnd.getDate() + 1);
         }
 
-        state[id] = { ...state[id], status: 'occupied', endTime: customEnd.toISOString() };
+        state[id] = Object.assign({}, state[id], { status: 'occupied', endTime: customEnd.toISOString() });
         saveStateToFirebase();
       }
     }
@@ -129,10 +130,10 @@
         const st = state[c.id];
         const div = document.createElement('div');
         div.className = 'console';
-        const end = st.endTime ? new Date(st.endTime) : null;
+        const end = st && st.endTime ? new Date(st.endTime) : null;
         let statusText = '', statusClass = '', progressBar = '';
 
-        if (st.status === 'disponible') {
+        if (!st || st.status === 'disponible') {
           statusText = '✅ Disponible';
           statusClass = 'disponible';
         } else if (st.status === 'ferme') {
@@ -147,7 +148,7 @@
           const duration = 60;
           const timeUsed = Math.min(duration, Math.max(0, duration - diffRaw));
           const percent = Math.min(100, Math.max(0, (timeUsed / duration) * 100));
-          const endTimeStr = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const endTimeStr = end ? end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
           if (diff > 5) {
             statusText = `⏳ Occupée – Libre dans ${diff} min (fin à ${endTimeStr})`;
@@ -181,41 +182,44 @@
         const st = state[c.id];
         const div = document.createElement('div');
         div.className = 'console';
-        const end = st.endTime ? new Date(st.endTime) : null;
-        const titleClass = st.status === 'occupied' ? 'admin-occupied-title' : '';
-        let content = `<h2 class="${titleClass}">${c.nom}</h2><p>Manettes utilisées : ${st.manettes}</p>`;
+        const end = st && st.endTime ? new Date(st.endTime) : null;
+        const titleClass = st && st.status === 'occupied' ? 'admin-occupied-title' : '';
+        let content = `<h2 class="${titleClass}">${c.nom}</h2><p>Manettes utilisées : ${st ? st.manettes : 1}</p>`;
 
-        if (st.status === 'occupied') {
+        if (st && st.status === 'occupied') {
           const diff = Math.ceil((end - now) / 60000);
-          const endTimeStr = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const endTimeStr = end ? end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
           if (diff <= 0) {
-            div.classList.add('alert');
-            document.getElementById('alert-sound').play();
-            content += `<p>Dépassé de ${Math.abs(diff)} min</p>`;
+            content += `<p style="color:red;">Temps écoulé !</p>`;
           } else {
-            content += `<p>Fin dans ${diff} min (à ${endTimeStr})</p>`;
+            content += `<p>Occupée jusqu'à ${endTimeStr} (${diff} min restantes)</p>`;
           }
+        } else if (st && st.status === 'ferme') {
+          content += `<p>Fermée</p>`;
+        } else if (st && st.status === 'animation') {
+          content += `<p>En animation</p>`;
         } else {
-          content += `<p>Statut : ${st.status}</p>`;
+          content += `<p>Disponible</p>`;
         }
 
         content += `
-          <label for="manettes-${c.id}">Manettes :</label>
-          <select id="manettes-${c.id}" class="manettes-select" onchange="changeManettes('${c.id}', this.value)">
-            ${[1, 2, 3, 4].map(n => `<option value="${n}" ${st.manettes == n ? 'selected' : ''}>${n}</option>`).join('')}
-          </select>
-
           <div class="admin-buttons">
-            <button onclick="occupy('${c.id}')">Occuper 1h</button>
+            <button onclick="occupy('${c.id}', 60)">Occuper 1h</button>
             <button onclick="release('${c.id}')">Libérer</button>
-            <button onclick="fermer('${c.id}')">Fermé</button>
+            <button onclick="fermer('${c.id}')">Fermer</button>
             <button onclick="animation('${c.id}')">Animation</button>
           </div>
-
+          <label>Manettes utilisées :
+            <select onchange="changeManettes('${c.id}', this.value)">
+              <option value="1"${st && st.manettes === 1 ? ' selected' : ''}>1</option>
+              <option value="2"${st && st.manettes === 2 ? ' selected' : ''}>2</option>
+              <option value="3"${st && st.manettes === 3 ? ' selected' : ''}>3</option>
+              <option value="4"${st && st.manettes === 4 ? ' selected' : ''}>4</option>
+            </select>
+          </label>
           <div class="custom-time">
-            <label for="custom-time-${c.id}">Définir l'heure de fin :</label>
-            <input type="time" id="custom-time-${c.id}">
-            <button onclick="setCustomEndTime('${c.id}')">Appliquer</button>
+            <label>Heure fin personnalisée: <input type="time" id="custom-time-${c.id}"/></label>
+            <button onclick="setCustomEndTime('${c.id}')">Valider</button>
           </div>
         `;
 
@@ -224,37 +228,35 @@
       });
     }
 
-    function checkAdminAccess() {
-      const code = prompt("Mot de passe admin :");
-      if (code === adminPassword) {
+    function listenToFirebase() {
+      db.ref('consoleState').on('value', snapshot => {
+        state = snapshot.val() || {};
+        updateDisplay();
+        if (document.getElementById('admin-panel').style.display === 'block') {
+          updateAdminDisplay();
+        }
+      });
+    }
+
+    function askPassword() {
+      const password = prompt("Entrez le mot de passe administrateur:");
+      if (password === adminPassword) {
         document.getElementById('admin-panel').style.display = 'block';
+        updateAdminDisplay();
+      } else {
+        alert("Mot de passe incorrect !");
       }
     }
 
-    onValue(ref(db, 'consoleState'), snapshot => {
-      if (snapshot.exists()) {
-        state = snapshot.val();
-      } else {
-        consoles.forEach(c => {
-          state[c.id] = { status: 'disponible', endTime: null, manettes: 1 };
-        });
-        saveStateToFirebase();
-      }
-      updateDisplay();
-      updateAdminDisplay();
+    // Initialisation
+    listenToFirebase();
+    updateDisplay();
+
+    // Clic droit sur la page pour afficher le panneau admin
+    document.body.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      askPassword();
     });
-
-    window.occupy = occupy;
-    window.release = release;
-    window.fermer = fermer;
-    window.animation = animation;
-    window.changeManettes = changeManettes;
-    window.setCustomEndTime = setCustomEndTime;
-    window.checkAdminAccess = checkAdminAccess;
   </script>
-
-  <button onclick="checkAdminAccess()">Mode Admin</button>
 </body>
 </html>
-
-
