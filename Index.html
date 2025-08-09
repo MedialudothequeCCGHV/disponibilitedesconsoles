@@ -5,33 +5,119 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Disponibilité des Consoles</title>
   <style>
-    body { font-family: sans-serif; margin: 0; padding: 0; background: #f7f7f7; background-size: cover; background-repeat: no-repeat; background-position: top center; padding-top: 180px; }
-    header { background: white; display: flex; align-items: center; justify-content: center; padding: 1rem; }
-    header img { height: 100px; }
-    h1 { text-align: center; color: #008cd0; margin-top: 0.5rem; }
-    #console-list, #admin-controls { display: flex; justify-content: center; flex-wrap: wrap; gap: 1rem; padding: 1rem; }
-    .console { flex: 1 1 300px; max-width: 320px; background: white; padding: 1rem; border-radius: 1rem; box-shadow: 0 2px 6px rgba(0,0,0,0.1); position: relative; }
-    .console.alert { border: 3px solid red; background: #ffe5e5; }
-    .console h2 { margin-top: 0; color: #333; }
-    .admin-occupied-title { color: red !important; }
-    .status { font-weight: bold; }
-    .disponible { color: green; }
-    .soon { color: orange; }
-    .occupied { color: red; }
-    .bar-container { height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; margin-top: 10px; }
-    .bar-fill { height: 100%; background: #77b800; width: 0%; transition: width 1s; }
-    .admin-panel { margin: 2rem; display: none; }
-    .admin-buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
-    .admin-buttons button { flex: 1 1 45%; padding: 0.5rem; background: #008cd0; color: white; border: none; border-radius: 0.5rem; cursor: pointer; }
-    .admin-buttons button:hover { background: #006ba1; }
-    .manettes-select { margin-top: 0.5rem; }
-    .status-icon { height: 20px; vertical-align: middle; margin-right: 8px; }
-    .custom-time { margin-top: 0.5rem; }
-    .custom-time input[type="time"] { margin-right: 0.5rem; padding: 0.3rem; border-radius: 0.3rem; border: 1px solid #ccc; }
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f7f7f7;
+      background-image: url('bandeau.png');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: top center;
+      padding-top: 180px;
+    }
+    header {
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    header img {
+      height: 100px;
+    }
+    h1 {
+      text-align: center;
+      color: #008cd0;
+      margin-top: 0.5rem;
+    }
+    #console-list, #admin-controls {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 1rem;
+    }
+    .console {
+      flex: 1 1 300px;
+      max-width: 320px;
+      background: white;
+      padding: 1rem;
+      border-radius: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    .console.alert {
+      border: 3px solid red;
+      background: #ffe5e5;
+    }
+    .console h2 {
+      margin-top: 0;
+      color: #333;
+    }
+    .admin-occupied-title {
+      color: red !important;
+    }
+    .status {
+      font-weight: bold;
+    }
+    .disponible {
+      color: green;
+    }
+    .soon {
+      color: orange;
+    }
+    .occupied {
+      color: red;
+    }
+    .bar-container {
+      height: 10px;
+      background: #ddd;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    .bar-fill {
+      height: 100%;
+      background: #77b800;
+      width: 0%;
+      transition: width 1s;
+    }
+    .admin-panel {
+      margin: 2rem;
+      display: none;
+    }
+    .admin-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .admin-buttons button {
+      flex: 1 1 45%;
+      padding: 0.5rem;
+      background: #008cd0;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+    }
+    .admin-buttons button:hover {
+      background: #006ba1;
+    }
+    .manettes-select {
+      margin-top: 0.5rem;
+    }
+    .custom-time {
+      margin-top: 0.5rem;
+    }
+    .custom-time input[type="time"] {
+      margin-right: 0.5rem;
+      padding: 0.3rem;
+      border-radius: 0.3rem;
+      border: 1px solid #ccc;
+    }
   </style>
-  <!-- Firebase SDK scripts classiques -->
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"></script>
 </head>
 <body>
   <header>
@@ -48,21 +134,6 @@
   <audio id="alert-sound" src="https://medialudotheque.ccghv.fr/files/arcade-ui-18-2295171.mp3" preload="auto"></audio>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAvCCs5aCiou0qgXTwWEUpcVp7EaoNAroU",
-      authDomain: "consoles-7861c.firebaseapp.com",
-      databaseURL: "https://consoles-7861c-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "consoles-7861c",
-      storageBucket: "consoles-7861c.firebasestorage.app",
-      messagingSenderId: "496836070107",
-      appId: "1:496836070107:web:c1dcb41a50582f73159afe",
-      measurementId: "G-4QM8M1VRVD"
-    };
-
-    // Initialise Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
     const consoles = [
       { id: 'ps5', nom: '🎮 PlayStation 5' },
       { id: 'switch', nom: '🕹️ Nintendo Switch' },
@@ -70,56 +141,20 @@
     ];
 
     let state = {};
-    let adminPassword = "admin2024";
+    let adminPassword = localStorage.getItem('adminPassword') || 'admin2024';
 
-    function saveStateToFirebase() {
-      db.ref('consoleState').set(state);
-    }
-
-    function occupy(id, minutes = 60) {
-      const end = new Date();
-      end.setMinutes(end.getMinutes() + minutes);
-      state[id] = Object.assign({}, state[id], { status: 'occupied', endTime: end.toISOString() });
-      saveStateToFirebase();
-    }
-
-    function release(id) {
-      state[id] = Object.assign({}, state[id], { status: 'disponible', endTime: null });
-      saveStateToFirebase();
-    }
-
-    function fermer(id) {
-      state[id] = Object.assign({}, state[id], { status: 'ferme', endTime: null });
-      saveStateToFirebase();
-    }
-
-    function animation(id) {
-      state[id] = Object.assign({}, state[id], { status: 'animation', endTime: null });
-      saveStateToFirebase();
-    }
-
-    function changeManettes(id, value) {
-      state[id] = Object.assign({}, state[id], { manettes: parseInt(value) });
-      saveStateToFirebase();
-    }
-
-    function setCustomEndTime(id) {
-      const input = document.getElementById('custom-time-' + id);
-      if (input && input.value) {
-        const now = new Date();
-        const [hours, minutes] = input.value.split(':');
-        const customEnd = new Date(now);
-        customEnd.setHours(parseInt(hours));
-        customEnd.setMinutes(parseInt(minutes));
-        customEnd.setSeconds(0);
-
-        if (customEnd < now) {
-          customEnd.setDate(customEnd.getDate() + 1);
+    function loadState() {
+      const saved = localStorage.getItem('consoleState');
+      state = saved ? JSON.parse(saved) : {};
+      consoles.forEach(c => {
+        if (!state[c.id]) {
+          state[c.id] = { status: 'disponible', endTime: null, manettes: 1 };
         }
+      });
+    }
 
-        state[id] = Object.assign({}, state[id], { status: 'occupied', endTime: customEnd.toISOString() });
-        saveStateToFirebase();
-      }
+    function saveState() {
+      localStorage.setItem('consoleState', JSON.stringify(state));
     }
 
     function updateDisplay() {
@@ -130,10 +165,10 @@
         const st = state[c.id];
         const div = document.createElement('div');
         div.className = 'console';
-        const end = st && st.endTime ? new Date(st.endTime) : null;
+        const end = st.endTime ? new Date(st.endTime) : null;
         let statusText = '', statusClass = '', progressBar = '';
 
-        if (!st || st.status === 'disponible') {
+        if (st.status === 'disponible') {
           statusText = '✅ Disponible';
           statusClass = 'disponible';
         } else if (st.status === 'ferme') {
@@ -148,7 +183,7 @@
           const duration = 60;
           const timeUsed = Math.min(duration, Math.max(0, duration - diffRaw));
           const percent = Math.min(100, Math.max(0, (timeUsed / duration) * 100));
-          const endTimeStr = end ? end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+          const endTimeStr = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
           if (diff > 5) {
             statusText = `⏳ Occupée – Libre dans ${diff} min (fin à ${endTimeStr})`;
@@ -182,44 +217,41 @@
         const st = state[c.id];
         const div = document.createElement('div');
         div.className = 'console';
-        const end = st && st.endTime ? new Date(st.endTime) : null;
-        const titleClass = st && st.status === 'occupied' ? 'admin-occupied-title' : '';
-        let content = `<h2 class="${titleClass}">${c.nom}</h2><p>Manettes utilisées : ${st ? st.manettes : 1}</p>`;
+        const end = st.endTime ? new Date(st.endTime) : null;
+        const titleClass = st.status === 'occupied' ? 'admin-occupied-title' : '';
+        let content = `<h2 class="${titleClass}">${c.nom}</h2><p>Manettes utilisées : ${st.manettes}</p>`;
 
-        if (st && st.status === 'occupied') {
+        if (st.status === 'occupied') {
           const diff = Math.ceil((end - now) / 60000);
-          const endTimeStr = end ? end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+          const endTimeStr = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           if (diff <= 0) {
-            content += `<p style="color:red;">Temps écoulé !</p>`;
+            div.classList.add('alert');
+            document.getElementById('alert-sound').play();
+            content += `<p>Dépassé de ${Math.abs(diff)} min</p>`;
           } else {
-            content += `<p>Occupée jusqu'à ${endTimeStr} (${diff} min restantes)</p>`;
+            content += `<p>Fin dans ${diff} min (à ${endTimeStr})</p>`;
           }
-        } else if (st && st.status === 'ferme') {
-          content += `<p>Fermée</p>`;
-        } else if (st && st.status === 'animation') {
-          content += `<p>En animation</p>`;
         } else {
-          content += `<p>Disponible</p>`;
+          content += `<p>Statut : ${st.status}</p>`;
         }
 
         content += `
+          <label for="manettes-${c.id}">Manettes :</label>
+          <select id="manettes-${c.id}" class="manettes-select" onchange="changeManettes('${c.id}', this.value)">
+            ${[1, 2, 3, 4].map(n => `<option value="${n}" ${st.manettes == n ? 'selected' : ''}>${n}</option>`).join('')}
+          </select>
+
           <div class="admin-buttons">
-            <button onclick="occupy('${c.id}', 60)">Occuper 1h</button>
+            <button onclick="occupy('${c.id}')">Occuper 1h</button>
             <button onclick="release('${c.id}')">Libérer</button>
-            <button onclick="fermer('${c.id}')">Fermer</button>
+            <button onclick="fermer('${c.id}')">Fermé</button>
             <button onclick="animation('${c.id}')">Animation</button>
           </div>
-          <label>Manettes utilisées :
-            <select onchange="changeManettes('${c.id}', this.value)">
-              <option value="1"${st && st.manettes === 1 ? ' selected' : ''}>1</option>
-              <option value="2"${st && st.manettes === 2 ? ' selected' : ''}>2</option>
-              <option value="3"${st && st.manettes === 3 ? ' selected' : ''}>3</option>
-              <option value="4"${st && st.manettes === 4 ? ' selected' : ''}>4</option>
-            </select>
-          </label>
+
           <div class="custom-time">
-            <label>Heure fin personnalisée: <input type="time" id="custom-time-${c.id}"/></label>
-            <button onclick="setCustomEndTime('${c.id}')">Valider</button>
+            <label for="custom-time-${c.id}">Définir l'heure de fin :</label>
+            <input type="time" id="custom-time-${c.id}">
+            <button onclick="setCustomEndTime('${c.id}')">Appliquer</button>
           </div>
         `;
 
@@ -228,35 +260,95 @@
       });
     }
 
-    function listenToFirebase() {
-      db.ref('consoleState').on('value', snapshot => {
-        state = snapshot.val() || {};
-        updateDisplay();
-        if (document.getElementById('admin-panel').style.display === 'block') {
-          updateAdminDisplay();
-        }
-      });
+    function occupy(id, minutes = 60) {
+      const end = new Date();
+      end.setMinutes(end.getMinutes() + minutes);
+      state[id].status = 'occupied';
+      state[id].endTime = end.toISOString();
+      saveState();
+      updateDisplay();
+      updateAdminDisplay();
     }
 
-    function askPassword() {
-      const password = prompt("Entrez le mot de passe administrateur:");
-      if (password === adminPassword) {
-        document.getElementById('admin-panel').style.display = 'block';
+    function release(id) {
+      state[id].status = 'disponible';
+      state[id].endTime = null;
+      saveState();
+      updateDisplay();
+      updateAdminDisplay();
+    }
+
+    function fermer(id) {
+      state[id].status = 'ferme';
+      state[id].endTime = null;
+      saveState();
+      updateDisplay();
+      updateAdminDisplay();
+    }
+
+    function animation(id) {
+      state[id].status = 'animation';
+      state[id].endTime = null;
+      saveState();
+      updateDisplay();
+      updateAdminDisplay();
+    }
+
+    function changeManettes(id, value) {
+      state[id].manettes = parseInt(value);
+      saveState();
+      updateDisplay();
+      updateAdminDisplay();
+    }
+
+    function setCustomEndTime(id) {
+      const input = document.getElementById('custom-time-' + id);
+      if (input && input.value) {
+        const now = new Date();
+        const [hours, minutes] = input.value.split(':');
+        const customEnd = new Date(now);
+        customEnd.setHours(parseInt(hours));
+        customEnd.setMinutes(parseInt(minutes));
+        customEnd.setSeconds(0);
+        if (customEnd < now) {
+          customEnd.setDate(customEnd.getDate() + 1);
+        }
+        state[id].status = 'occupied';
+        state[id].endTime = customEnd.toISOString();
+        saveState();
+        updateDisplay();
         updateAdminDisplay();
-      } else {
-        alert("Mot de passe incorrect !");
       }
     }
 
-    // Initialisation
-    listenToFirebase();
-    updateDisplay();
+    function promptAdmin() {
+      const code = prompt("Mot de passe admin :");
+      if (code === adminPassword) {
+        document.getElementById('admin-panel').style.display = 'block';
+      } else if (code === 'change') {
+        const newPass = prompt("Nouveau mot de passe admin :");
+        if (newPass) {
+          adminPassword = newPass;
+          localStorage.setItem('adminPassword', newPass);
+          alert("Mot de passe changé.");
+        }
+      }
+    }
 
-    // Clic droit sur la page pour afficher le panneau admin
-    document.body.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      askPassword();
-    });
+    function checkAdminAccess() {
+      if (localStorage.getItem('adminAccess') === 'true') {
+        document.getElementById('admin-panel').style.display = 'block';
+      }
+    }
+
+    loadState();
+    updateDisplay();
+    updateAdminDisplay();
+    checkAdminAccess();
+    setInterval(() => {
+      updateDisplay();
+      updateAdminDisplay();
+    }, 60000);
   </script>
 </body>
 </html>
