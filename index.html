@@ -243,7 +243,10 @@
       updateDisplay();
       updateAdminDisplay();
     });
-
+setInterval(() => {
+  updateDisplay();
+  updateAdminDisplay();
+}, 1000);
     window.occupy = occupy;
     window.release = release;
     window.fermer = fermer;
@@ -256,3 +259,4 @@
   <button onclick="checkAdminAccess()">Mode Admin</button>
 </body>
 </html>
+
